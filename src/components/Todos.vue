@@ -11,7 +11,7 @@
                     <label>Titel:</label>
                 </div>
                 <div class="input-field col s10">
-                    <input type="text" v-model="todo.title" />
+                    <input type="search" v-model="todo.title" />
                 </div>
                 <div class="col s2">
                     <label>Beschreibung:</label>
@@ -81,7 +81,6 @@ export default {
                 .collection("users")
                 .doc(firebase.auth().currentUser.uid)
                 .collection("todos")
-                .where("isCompleted", "==", this.completed == "true")
                 .orderBy("date");
 
             todosRef.onSnapshot(snap => {

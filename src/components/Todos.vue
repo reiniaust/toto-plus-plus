@@ -1,11 +1,11 @@
 <template>
 <section>
     <navigation></navigation>
-    <h5 class="center-align">{{ completed=="false" ? "Aufgaben" : "Erledigt" }}</h5>
+    <h5 class="center-align">{{ !completed ? "Aufgaben" : "Erledigt" }}</h5>
     <span>
     </span>
     <ul class="collection with-header">
-        <li v-show="completed == 'false'" class="collection-header">
+        <li v-show="!completed" class="collection-header">
             <div class="row">
                 <div class="col s2">
                     <label>Titel:</label>
@@ -34,7 +34,7 @@
                 </div>
             </div>
         </li>
-        <li class="collection-item" v-for="todo in todos.filter(t => t.title.toUpperCase().includes(todo.title.toUpperCase()))" :key="todo.id">
+        <li class="collection-item" v-for="todo in todos.filter(filterTodo)" :key="todo.id">
             <span class="deleteIcon" @click="deleteToDo(todo.id)">✕</span>
             <span @click="editToDo(todo)">
                 {{(todo.date ? todo.date + "  " : "") + todo.title + " " + todo.description}}
@@ -68,7 +68,10 @@ export default {
                 description: "",
                 date: null,
             },
-            todos: []
+            todos: [],
+            filterTodo: (t) => {
+                return t.isCompleted == this.completed && t.title.toUpperCase().includes(this.todo.title.toUpperCase())
+            }
         };
     },
     created() {

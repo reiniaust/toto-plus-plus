@@ -1,5 +1,5 @@
 <template>
-    <Todos completed=true></Todos>
+    <Todos completed></Todos>
 </template>
 
 <script>

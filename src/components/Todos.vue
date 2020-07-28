@@ -1,36 +1,33 @@
 <template>
 <section>
     <navigation></navigation>
-    <h5 class="center-align">{{ !completed ? "Aufgaben" : "Erledigt" }}</h5>
+    <h5 class="center-align">{{ !completed ? "Offene Aufgaben" : "Erledigt" }}</h5>
     <span>
     </span>
     <ul class="collection with-header">
-        <li v-show="!completed" class="collection-header">
+        <li class="collection-header">
             <div class="row">
-                <div class="col s2">
-                    <label>Titel:</label>
+                <div class="input-field col s12">
+                    <input type="text" placeholder="Titel" v-model="todo.title" />
                 </div>
-                <div class="input-field col s10">
-                    <input type="search" v-model="todo.title" />
+                <div class="input-field col s12">
+                    <input type="text" placeholder="Beschreibung" v-model="todo.description" />
                 </div>
-                <div class="col s2">
-                    <label>Beschreibung:</label>
-                </div>
-                <div class="input-field col s10">
-                    <input type="text" v-model="todo.description" />
-                </div>
-                <div class="col s2">
+                <div class="col s4">
                     <label>Termin:</label>
                 </div>
-                <div class="input-field col s6">
+                <div class="input-field col s8">
                     <input type="date" v-model="todo.date" />
                 </div>
                 <span></span>
-                <div class="input-field col s3">
+                <div class="input-field col s4">
                     <button class="btn" :disabled="todo.title == ''" @click="addToDo">Hinzufügen</button>
                 </div>
                 <div class="input-field col s3">
                     <button class="btn" :disabled="todo.id == null" @click="updateToDo">Ändern</button>
+                </div>
+                <div class="input-field col s4">
+                    <button class="btn" :disabled="todo.title == ''" @click="initToDo">Abbrechen</button>
                 </div>
             </div>
         </li>
@@ -70,7 +67,14 @@ export default {
             },
             todos: [],
             filterTodo: (t) => {
-                return t.isCompleted == this.completed && t.title.toUpperCase().includes(this.todo.title.toUpperCase())
+                let ok = (t.isCompleted == this.completed);
+                // Suche nach mehr als einem Wort
+                this.todo.title.toUpperCase().split(" ") .forEach(word => {
+                    if (!t.title.toUpperCase().includes(word)) {
+                        ok = false
+                    }
+                });
+                return ok;
             }
         };
     },
@@ -107,10 +111,7 @@ export default {
                     date: this.todo.date,
                     isCompleted: false,
                 })
-            this.todo.id = null;
-            this.todo.title = "";
-            this.todo.description = "";
-            this.todo.date = null;
+            this.initToDo();
         },
         updateToDo() {
             firebase
@@ -125,10 +126,13 @@ export default {
                     date: this.todo.date,
                     isCompleted: this.todo.isCompleted
                 });
-        this.todo.id = null;
-        this.todo.title = "";
-        this.todo.description = "";
-        this.todo.date = null;
+            this.initToDo();
+        },
+        initToDo() {
+            this.todo.id = null;
+            this.todo.title = "";
+            this.todo.description = "";
+            this.todo.date = null;
         },
         editToDo(selected) {
             this.todo = Object.assign({}, selected)

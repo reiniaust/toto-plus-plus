@@ -4,6 +4,9 @@
     <h5 class="center-align">{{ !completed ? "Offene Aufgaben" : "Erledigt" }}</h5>
     <span>
     </span>
+                    <input type="checkbox" />
+                    <span></span>
+
     <ul class="collection with-header">
         <li class="collection-header">
             <div class="row">
@@ -13,36 +16,40 @@
                 <div class="input-field col s12">
                     <input type="text" placeholder="Beschreibung" v-model="todo.description" />
                 </div>
-                <div class="col s4">
+                <div class="col s2">
                     <label>Termin:</label>
                 </div>
-                <div class="input-field col s8">
+                <div class="col s5">
                     <input type="date" v-model="todo.date" />
                 </div>
-                <span></span>
-                <div class="input-field col s4">
-                    <button class="btn" :disabled="todo.title == ''" @click="addToDo">Hinzufügen</button>
+                <div class="col s2">
+                    <label>Erledigt:</label>
                 </div>
-                <div class="input-field col s3">
+                <div class="col s3">
+                    <label>
+                        <input type="checkbox" v-model="todo.isCompleted" />
+                        <span></span>
+                    </label>
+                </div>
+                <div class="col s12" />
+                <div class="col s3">
+                    <button class="btn" :disabled="todo.title == ''" @click="addToDo">Anlegen</button>
+                </div>
+                <div class="col s3">
                     <button class="btn" :disabled="todo.id == null" @click="updateToDo">Ändern</button>
                 </div>
-                <div class="input-field col s4">
+                <div class="col s3">
+                    <button class="btn" :disabled="todo.id == null" @click="deleteToDo">Löschen</button>
+                </div>
+                <div class="col s3">
                     <button class="btn" :disabled="todo.title == ''" @click="initToDo">Abbrechen</button>
                 </div>
             </div>
         </li>
         <li class="collection-item" v-for="todo in todos.filter(filterTodo)" :key="todo.id">
-            <span class="deleteIcon" @click="deleteToDo(todo.id)">✕</span>
             <span @click="editToDo(todo)">
                 {{(todo.date ? todo.date + "  " : "") + todo.title + " " + todo.description}}
             </span>
-            <span class="secondary-content">
-                <label>
-                    <input type="checkbox" class="filled-in" :checked="todo.isCompleted"
-                        @change="updateCompleted(todo.id, $event)" />
-                    <span></span>
-                </label>
-            </span>       
         </li>
     </ul>
 </section>
@@ -99,6 +106,9 @@ export default {
                 });
             });
         },
+        editToDo(selected) {
+            this.todo = Object.assign({}, selected)
+        },
         addToDo() {
             firebase
                 .firestore()
@@ -128,14 +138,21 @@ export default {
                 });
             this.initToDo();
         },
+        deleteToDo() {
+        firebase
+            .firestore()
+            .collection("users")
+            .doc(firebase.auth().currentUser.uid)
+            .collection("todos")
+            .doc(this.todo.id)
+            .delete();
+            this.initToDo();
+        },
         initToDo() {
             this.todo.id = null;
             this.todo.title = "";
             this.todo.description = "";
             this.todo.date = null;
-        },
-        editToDo(selected) {
-            this.todo = Object.assign({}, selected)
         },
         updateCompleted(docId, e) {
             var isChecked = e.target.checked;
@@ -148,15 +165,6 @@ export default {
                 .update({
                     isCompleted: isChecked
                 });
-        },
-        deleteToDo(docId) {
-        firebase
-            .firestore()
-            .collection("users")
-            .doc(firebase.auth().currentUser.uid)
-            .collection("todos")
-            .doc(docId)
-            .delete();
         }
     }
 }; 

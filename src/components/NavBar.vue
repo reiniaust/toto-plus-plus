@@ -2,18 +2,22 @@
     <nav>
         <div class="nav-wrapper">
             <ul id="nav-mobile" class="right">
+                <!--
                 <li v-show="user">
                     <router-link to="/todosopen">Offen</router-link>
                 </li>
+                 -->
                 <li v-show="user">
-                    <router-link to="/todoscompleted">Erledigt</router-link>
+                    <router-link to="/todoscompleted">Todos</router-link>
                 </li>
                 <li v-show="!user">
                     <router-link to="/login">Login</router-link>
                 </li>
+                <!--
                 <li v-show="user">
                     <router-link to="/profile">Profil</router-link>
                 </li>
+                 -->
                 <li v-show="user">
                     <a @click="signoutButtonPressed">Logout</a>
                 </li>

@@ -1,12 +1,9 @@
 <template>
 <section>
     <navigation></navigation>
-    <h5 class="center-align">{{ !completed ? "Offene Aufgaben" : "Erledigt" }}</h5>
+    <h5 class="center-align">{{ (!todo.isCompleted ? "Offene" : "Erledigte") + " Aufgaben" }}</h5>
     <span>
     </span>
-                    <input type="checkbox" />
-                    <span></span>
-
     <ul class="collection with-header">
         <li class="collection-header">
             <div class="row">
@@ -19,10 +16,10 @@
                 <div class="col s2">
                     <label>Termin:</label>
                 </div>
-                <div class="col s5">
+                <div class="col s4">
                     <input type="date" v-model="todo.date" />
                 </div>
-                <div class="col s2">
+                <div class="col s3">
                     <label>Erledigt:</label>
                 </div>
                 <div class="col s3">
@@ -47,9 +44,12 @@
             </div>
         </li>
         <li class="collection-item" v-for="todo in todos.filter(filterTodo)" :key="todo.id">
-            <span @click="editToDo(todo)">
-                {{(todo.date ? todo.date + "  " : "") + todo.title + " " + todo.description}}
-            </span>
+            <span class="title" @click="editToDo(todo)">{{todo.title}}</span>
+            <!-- 
+            <p v-show="todo.description" class="secondary-content">{{todo.description}}</p>
+            -->
+            <span class="secondary-content">{{(todo.date ? new Date(todo.date).toLocaleDateString() : "")}}</span>
+            <br>
         </li>
     </ul>
 </section>
@@ -71,10 +71,11 @@ export default {
                 title: "",
                 description: "",
                 date: null,
+                isCompleted: false
             },
             todos: [],
             filterTodo: (t) => {
-                let ok = (t.isCompleted == this.completed);
+                let ok = (t.isCompleted == this.todo.isCompleted);
                 // Suche nach mehr als einem Wort
                 this.todo.title.toUpperCase().split(" ") .forEach(word => {
                     if (!t.title.toUpperCase().includes(word)) {
@@ -119,7 +120,7 @@ export default {
                     title: this.todo.title,
                     description: this.todo.description,
                     date: this.todo.date,
-                    isCompleted: false,
+                    isCompleted: this.todo.isCompleted,
                 })
             this.initToDo();
         },
@@ -153,18 +154,7 @@ export default {
             this.todo.title = "";
             this.todo.description = "";
             this.todo.date = null;
-        },
-        updateCompleted(docId, e) {
-            var isChecked = e.target.checked;
-            firebase
-                .firestore()
-                .collection("users")
-                .doc(firebase.auth().currentUser.uid)
-                .collection("todos")
-                .doc(docId)
-                .update({
-                    isCompleted: isChecked
-                });
+            this.isCompleted = false;
         }
     }
 }; 

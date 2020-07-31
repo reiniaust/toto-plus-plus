@@ -69,11 +69,3 @@ dist
 .firebaserc
 *.zip
 package-lock.json
-dist/static/css/app.880528a4a2113911f17b0150605f25c4.css
-dist/index.html
-dist/static/css/app.880528a4a2113911f17b0150605f25c4.css
-dist/static/css/app.880528a4a2113911f17b0150605f25c4.css
-dist/static/css/app.880528a4a2113911f17b0150605f25c4.css.map
-dist/static/js/app.e5c5f0e2ed329d3d9dcc.js
-dist/static/js/app.e5c5f0e2ed329d3d9dcc.js.map
-dist/static/js/manifest.2ae2e69a05c33dfc65f8.js.map

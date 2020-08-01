@@ -8,6 +8,7 @@
         <li class="collection-header">
             <div class="row">
                 <div class="input-field col s12">
+                    <div>{{todo.id}}</div>
                     <input type="text" placeholder="Titel" v-model="todo.title" />
                 </div>
                 <div class="input-field col s12">
@@ -30,25 +31,28 @@
                 </div>
                 <div class="col s12" />
                 <div class="col s3">
-                    <button class="btn" :disabled="todo.title == ''" @click="addToDo">Anlegen</button>
+                    <button class="btn" :disabled="!editMode || todo.title == ''" @click="addTodo">Anlegen</button>
                 </div>
                 <div class="col s3">
-                    <button class="btn" :disabled="todo.id == null" @click="updateToDo">Ändern</button>
+                    <button class="btn" :disabled="!editMode || todo.id == null" @click="updateTodo">Ändern</button>
                 </div>
                 <div class="col s3">
-                    <button class="btn" :disabled="todo.id == null" @click="deleteToDo">Löschen</button>
+                    <button class="btn" :disabled="!editMode || todo.id == null" @click="ResetTodo">Löschen</button>
                 </div>
                 <div class="col s3">
-                    <button class="btn" :disabled="todo.title == ''" @click="initToDo">Abbrechen</button>
+                    <button class="btn" :disabled="todo.title == ''" @click="initTodo">Abbrechen</button>
                 </div>
             </div>
         </li>
+        <li v-show="todo.old" class="collection-item">
+            <div @click="showOldTodo(todo.old)">vorheriger Eintrag</div>
+        </li>
         <li class="collection-item" v-for="todo in todos.filter(filterTodo)" :key="todo.id">
-            <span class="title" @click="editToDo(todo)">{{todo.title}}</span>
+            <div class="title" @click="editTodo(todo)">{{todo.title}}</div>
             <!-- 
             <p v-show="todo.description" class="secondary-content">{{todo.description}}</p>
             -->
-            <span class="secondary-content">{{(todo.date ? new Date(todo.date).toLocaleDateString() : "")}}</span>
+            <span class="secondary-content">{{todo.description + " " + (todo.date ? new Date(todo.date).toLocaleDateString() : "")}}</span>
             <br>
         </li>
     </ul>
@@ -74,8 +78,9 @@ export default {
                 isCompleted: false
             },
             todos: [],
+            editMode: false,
             filterTodo: (t) => {
-                let ok = (t.isCompleted == this.todo.isCompleted);
+                let ok = (!this.todo.id && t.isCompleted == this.todo.isCompleted);
                 // Suche nach mehr als einem Wort
                 this.todo.title.toUpperCase().split(" ") .forEach(word => {
                     if (!t.title.toUpperCase().includes(word)) {
@@ -107,54 +112,63 @@ export default {
                 });
             });
         },
-        editToDo(selected) {
-            this.todo = Object.assign({}, selected)
+        editTodo(selected) {
+            this.todo = Object.assign({}, selected); // Objekt kopieren
+            this.editMode = true;
         },
-        addToDo() {
+        showOldTodo(selected) {
+            this.todo = Object.assign({}, selected);
+            this.editMode = false;
+        },
+        addTodo() {
+            this.saveTodo();
+        },
+        updateTodo() {
+            this.deleteTodo();
+            this.todo.old = this.todos.find(t => t.id == this.todo.id);
+            this.saveTodo();
+        },
+        saveTodo() {
+            let id = (new Date()).toLocaleString();
+            delete this.todo.id; // Id-Property aus dem Objekt entfernen, da die Id schon im Dokumeten-Schlüssel steckt
             firebase
                 .firestore()
                 .collection("users")
                 .doc(firebase.auth().currentUser.uid)
                 .collection("todos")
-                .add({
-                    title: this.todo.title,
-                    description: this.todo.description,
-                    date: this.todo.date,
-                    isCompleted: this.todo.isCompleted,
-                })
-            this.initToDo();
+                .doc(id)
+                .set(this.todo)
+            this.initTodo();
         },
-        updateToDo() {
+        ResetTodo() {
+            this.deleteTodo();
+            if (this.todo.title != "gelöscht") {
+                this.todo.title = "gelöscht";
+                this.todo.description = "";
+                this.todo.isCompleted = true;
+                this.saveTodo();
+            }
+            this.initTodo();
+        },
+        deleteTodo() {
             firebase
                 .firestore()
                 .collection("users")
                 .doc(firebase.auth().currentUser.uid)
                 .collection("todos")
                 .doc(this.todo.id)
-                .update({
-                    title: this.todo.title,
-                    description: this.todo.description,
-                    date: this.todo.date,
-                    isCompleted: this.todo.isCompleted
-                });
-            this.initToDo();
+                .delete();
+            //this.initTodo();
         },
-        deleteToDo() {
-        firebase
-            .firestore()
-            .collection("users")
-            .doc(firebase.auth().currentUser.uid)
-            .collection("todos")
-            .doc(this.todo.id)
-            .delete();
-            this.initToDo();
-        },
-        initToDo() {
+        initTodo() {
             this.todo.id = null;
             this.todo.title = "";
             this.todo.description = "";
             this.todo.date = null;
             this.isCompleted = false;
+            if (this.todo.old) {
+                delete this.todo.old;
+            }
         }
     }
 }; 
